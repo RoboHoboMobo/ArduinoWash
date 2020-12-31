@@ -45,6 +45,10 @@ void loop()
   concMin.readData();
   perMax.readData();
   perMin.readData();
+  
+  // Обновляем таймеры
+  if (pump3RelayTimer.isRunning())
+    pump3RelayTimer.update();
 
   // Логика для реле второго насоса
   if (bioMax.getSensorState() == SensorState::LevelHigh &&
@@ -67,13 +71,15 @@ void loop()
   }
   else if (concMax.getSensorState() == SensorState::LevelLow &&
            concMid.getSensorState() == SensorState::LevelHigh &&
-           concMin.getSensorState() == SensorState::LevelHigh) {
-	if (!pump3RelayTimer.isFinished())
-      pump3Relay.switchTo(Relay::State::Off); // Всегда выкл реле, если не прошло время
-			   
+           concMin.getSensorState() == SensorState::LevelHigh) {	
+	pump3RelayTimer.isFinished() ? pump3Relay.switchTo(Relay::State::On) :
+	                               pump3Relay.switchTo(Relay::State::Off);
+								   
     if (!pump3RelayTimer.isRunning() && 
-        pump3Relay.getCurrentState() == Relay::State::Off) // Запустить таймер, если он
-      pump3RelayTimer.start();                             // еще не запущен и реле выкл
+        pump3Relay.getCurrentState() == Relay::State::Off) { // Запустить таймер, если он
+      pump3RelayTimer.reset();                               // еще не запущен и реле выкл
+	  pump3RelayTimer.start();                             
+    }
   }
   else if (concMax.getSensorState() == SensorState::LevelHigh &&
            concMid.getSensorState() == SensorState::LevelHigh &&
@@ -85,13 +91,7 @@ void loop()
   else {
     // Обработка ошибок
   }
-
-  if (pump3RelayTimer.isRunning())
-    pump3RelayTimer.update();
-
-  if (pump3RelayTimer.isFinished())
-    pump3Relay.switchTo(Relay::State::On);
-    
+   
   // Логика для реле четвертого насоса
   if (perMax.getSensorState() == SensorState::LevelLow &&
       perMin.getSensorState() == SensorState::LevelLow) {
