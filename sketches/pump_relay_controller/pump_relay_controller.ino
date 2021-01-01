@@ -46,9 +46,9 @@ void loop()
   perMax.readData();
   perMin.readData();
   
-  // Обновляем таймеры
-  if (pump3RelayTimer.isRunning())
-    pump3RelayTimer.update();
+  // Обновляем таймеры: если таймер не запущен или уже готов,
+  // то ничего не произойдет
+  pump3RelayTimer.update();
 
   // Логика для реле второго насоса
   if (bioMax.getSensorState() == SensorState::LevelHigh &&
@@ -72,13 +72,13 @@ void loop()
   else if (concMax.getSensorState() == SensorState::LevelLow &&
            concMid.getSensorState() == SensorState::LevelHigh &&
            concMin.getSensorState() == SensorState::LevelHigh) {	
-	pump3RelayTimer.isFinished() ? pump3Relay.switchTo(Relay::State::On) :
-	                               pump3Relay.switchTo(Relay::State::Off);
+	  pump3RelayTimer.isFinished() ? pump3Relay.switchTo(Relay::State::On) :
+	                                 pump3Relay.switchTo(Relay::State::Off);
 								   
     if (!pump3RelayTimer.isRunning() && 
         pump3Relay.getCurrentState() == Relay::State::Off) { // Запустить таймер, если он
       pump3RelayTimer.reset();                               // еще не запущен и реле выкл
-	  pump3RelayTimer.start();                             
+	    pump3RelayTimer.start();                             
     }
   }
   else if (concMax.getSensorState() == SensorState::LevelHigh &&
